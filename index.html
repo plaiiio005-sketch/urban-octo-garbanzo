@@ -113,6 +113,22 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        /* --- สไตล์ของเครดิตผู้พัฒนา --- */
+        .credit {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed #30363d; /* เส้นประคั่นบางๆ */
+            font-size: 13px;
+            color: #8b949e;
+            line-height: 1.6;
+        }
+        
+        .credit .credit-title {
+            color: #58a6ff; /* เน้นสีฟ้าให้โดดเด่น */
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -164,49 +180,45 @@
                 <span class="slider"></span>
             </label>
         </div>
+
+        <div class="credit">
+            <span class="credit-title">@ผู้พัฒนาระบบ</span><br>
+            กมลวรรณ<br>
+            แผนกอิเล็กทรอนิกส์
+        </div>
     </div>
 
     <script type="module">
-        // 1. นำเข้า Firebase SDK (เวอร์ชัน 10)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 2. การตั้งค่า Firebase ของคุณ (*** ต้องแก้ตรงนี้เป็นของคุณเอง ***)
+        // *** อย่าลืมนำการตั้งค่า Firebase ของคุณมาใส่ตรงนี้เหมือนเดิมนะครับ ***
         const firebaseConfig = {
-             apiKey: "AIzaSyBS4suNegFJWpcE9UYv8XQGurforJiz1Ag",
-  authDomain: "plai-2941b.firebaseapp.com",
-  projectId: "plai-2941b",
-  storageBucket: "plai-2941b.firebasestorage.app",
-  messagingSenderId: "380977562722",
-  appId: "1:380977562722:web:1142602f45a28bba567d3b"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        // 3. เริ่มต้นการเชื่อมต่อ Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 4. ฟังก์ชันส่งค่าไปยัง Firebase เมื่อมีการคลิกสวิตช์
         window.toggleDevice = function(channelId) {
             const isChecked = document.getElementById(channelId).checked;
-            // ส่งค่า true/false ไปที่ path: smart_home/ch1, ch2, ...
             set(ref(db, 'smart_home/' + channelId), isChecked)
-                .then(() => {
-                    console.log(channelId + " ถูกเปลี่ยนสถานะเป็น " + isChecked);
-                })
-                .catch((error) => {
-                    console.error("เกิดข้อผิดพลาด: ", error);
-                });
+                .then(() => console.log(channelId + " ถูกเปลี่ยนสถานะเป็น " + isChecked))
+                .catch((error) => console.error("เกิดข้อผิดพลาด: ", error));
         };
 
-        // 5. ดึงค่าจาก Firebase แบบ Real-time มาอัปเดตสวิตช์บนหน้าเว็บ (กรณีมีการสั่งงานจากที่อื่น)
         const channels = ['ch1', 'ch2', 'ch3', 'ch4'];
-        
         channels.forEach(channel => {
             const channelRef = ref(db, 'smart_home/' + channel);
             onValue(channelRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data !== null) {
-                    // อัปเดตสวิตช์ตามค่าที่อ่านได้จาก Firebase
                     document.getElementById(channel).checked = data;
                 }
             });

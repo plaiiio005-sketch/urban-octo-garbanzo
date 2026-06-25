@@ -3,77 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART HOME - IoT Control Panel</title>
+    <title>SMART HOME - ESP8266 IoT Control Panel</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* --- CSS ตกแต่ง UI --- */
-        body {
-            background-color: #0d1117; /* พื้นหลังสีเข้ม */
-            color: #c9d1d9;
+        /* --- ตั้งค่าพื้นฐานและธีมสี (Dark Mode) --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0d1117; /* สีพื้นหลังมืด */
+            color: #c9d1d9;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
         }
 
+        /* --- กล่องควบคุมหลัก (Control Panel) --- */
         .control-panel {
             background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 15px;
-            padding: 30px;
-            width: 350px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 2px solid #30363d;
+            border-radius: 20px;
+            padding: 35px 25px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+            transition: border-color 0.3s;
         }
 
+        .control-panel:hover {
+            border-color: #58a6ff; /* ไฮไลท์ขอบสีฟ้าเมื่อเมาส์ชี้ */
+        }
+
+        /* --- หัวข้อแอปพลิเคชัน --- */
         h2 {
             text-align: center;
             color: #58a6ff;
-            margin-bottom: 5px;
-            text-transform: uppercase;
+            font-size: 24px;
             letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
         }
 
         p.subtitle {
             text-align: center;
             color: #8b949e;
-            font-size: 12px;
-            margin-bottom: 30px;
+            font-size: 13px;
+            margin-bottom: 35px;
+            text-transform: uppercase;
         }
 
+        /* --- แถวควบคุมแต่ละแชนแนล (UI 4 Channels) --- */
         .channel-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background-color: #21262d;
-            padding: 15px 20px;
+            padding: 18px 20px;
             margin-bottom: 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #30363d;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .channel-row:hover {
+            transform: scale(1.02);
+            background-color: #262c36;
         }
 
         .channel-info {
             display: flex;
             align-items: center;
             gap: 15px;
-            font-size: 16px;
-            font-weight: bold;
         }
 
+        /* ไอคอนหน้าแชนแนล */
         .channel-info i {
             color: #58a6ff;
-            font-size: 20px;
-            width: 25px;
+            font-size: 22px;
+            width: 30px;
             text-align: center;
         }
 
-        /* --- สไตล์ของ Toggle Switch --- */
+        .channel-info span {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f0f6fc;
+        }
+
+        /* --- ปุ่มสวิตช์เปิด-ปิด (Toggle Switch Custom) --- */
         .switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 24px;
+            width: 55px;
+            height: 28px;
         }
 
         .switch input { 
@@ -85,49 +116,55 @@
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-color: #484f58;
-            transition: .4s;
-            border-radius: 24px;
+            transition: .3s;
+            border-radius: 34px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #ffffff;
+            transition: .3s;
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
+        /* สเตตัสเมื่อถูกเปิดใช้งาน (Checked) */
         input:checked + .slider {
-            background-color: #238636; /* สีเขียวเมื่อเปิด */
+            background-color: #238636; /* สีเขียวสไตล์ GitHub/IoT */
         }
 
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(27px);
         }
 
-        /* --- สไตล์ของเครดิตผู้พัฒนา --- */
-        .credit {
+        /* --- ส่วนเครดิตผู้พัฒนาท้ายเว็บ --- */
+        .credit-section {
             text-align: center;
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px dashed #30363d; /* เส้นประคั่นบางๆ */
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #30363d;
             font-size: 13px;
             color: #8b949e;
             line-height: 1.6;
         }
         
-        .credit .credit-title {
-            color: #58a6ff; /* เน้นสีฟ้าให้โดดเด่น */
+        .credit-title {
+            color: #58a6ff;
             font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .credit-name {
+            color: #f0f6fc;
+            font-size: 14px;
+            margin-top: 2px;
         }
     </style>
 </head>
@@ -181,44 +218,56 @@
             </label>
         </div>
 
-        <div class="credit">
-            <span class="credit-title">@ผู้พัฒนาระบบ</span><br>
-            กมลวรรณ<br>
-            แผนกอิเล็กทรอนิกส์
+        <div class="credit-section">
+            <div class="credit-title">@ผู้พัฒนาระบบ</div>
+            <div class="credit-name">กมลวรรณ</div>
+            <div>แผนกอิเล็กทรอนิกส์</div>
         </div>
     </div>
 
     <script type="module">
+        // เรียกใช้งาน Firebase Web SDK v10 จาก CDN
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // *** อย่าลืมนำการตั้งค่า Firebase ของคุณมาใส่ตรงนี้เหมือนเดิมนะครับ ***
+        // ⚠️ ข้อสำคัญ: นำค่าคอนฟิกจากโปรเจกต์ Firebase ของคุณมาวางแทนที่ตรงนี้
         const firebaseConfig = {
-            apiKey: "AIzaSyBS4suNegFJWpcE9UYv8XQGurforJiz1Ag",
-  authDomain: "plai-2941b.firebaseapp.com",
-  databaseURL: "https://plai-2941b-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "plai-2941b",
-  storageBucket: "plai-2941b.firebasestorage.app",
-  messagingSenderId: "380977562722",
-  appId: "1:380977562722:web:1142602f45a28bba567d3b"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
+        // เริ่มต้นเชื่อมต่อ Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // ฟังก์ชันอัปเดตสถานะจากหน้าเว็บลงฐานข้อมูล Firebase (เมื่อกดคลิกสวิตช์)
         window.toggleDevice = function(channelId) {
             const isChecked = document.getElementById(channelId).checked;
+            
+            // บันทึกค่าลง Path: smart_home/ch1, smart_home/ch2 ... (ส่งค่าเป็น true หรือ false)
             set(ref(db, 'smart_home/' + channelId), isChecked)
-                .then(() => console.log(channelId + " ถูกเปลี่ยนสถานะเป็น " + isChecked))
-                .catch((error) => console.error("เกิดข้อผิดพลาด: ", error));
+                .then(() => {
+                    console.log(`อัปเดต ${channelId} เป็น: ${isChecked}`);
+                })
+                .catch((error) => {
+                    console.error("Firebase Update Error: ", error);
+                });
         };
 
-        const channels = ['ch1', 'ch2', 'ch3', 'ch4'];
-        channels.forEach(channel => {
-            const channelRef = ref(db, 'smart_home/' + channel);
-            onValue(channelRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data !== null) {
-                    document.getElementById(channel).checked = data;
+        // ฟังก์ชัน Sync สถานะแบบ Real-time จาก Firebase มาแสดงบนหน้าเว็บ
+        // (ทำให้ถ้าบอร์ด ESP8266 สั่งงาน หรือเปิดเว็บพร้อมกันหลายเครื่อง สวิตช์จะขยับตามกันทันที)
+        const channelList = ['ch1', 'ch2', 'ch3', 'ch4'];
+        channelList.forEach(channel => {
+            const nodeRef = ref(db, 'smart_home/' + channel);
+            onValue(nodeRef, (snapshot) => {
+                const dataValue = snapshot.val();
+                if (dataValue !== null) {
+                    document.getElementById(channel).checked = dataValue;
                 }
             });
         });

@@ -17,7 +17,7 @@
         }
 
         body {
-            background-color: #0d1117; /* สีพื้นหลังมืด */
+            background-color: #0d1117; 
             color: #c9d1d9;
             display: flex;
             justify-content: center;
@@ -39,10 +39,9 @@
         }
 
         .control-panel:hover {
-            border-color: #58a6ff; /* ไฮไลท์ขอบสีฟ้าเมื่อเมาส์ชี้ */
+            border-color: #58a6ff; 
         }
 
-        /* --- หัวข้อแอปพลิเคชัน --- */
         h2 {
             text-align: center;
             color: #58a6ff;
@@ -85,7 +84,6 @@
             gap: 15px;
         }
 
-        /* ไอคอนหน้าแชนแนล */
         .channel-info i {
             color: #58a6ff;
             font-size: 22px;
@@ -135,16 +133,15 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
-        /* สเตตัสเมื่อถูกเปิดใช้งาน (Checked) */
         input:checked + .slider {
-            background-color: #238636; /* สีเขียวสไตล์ GitHub/IoT */
+            background-color: #238636; 
         }
 
         input:checked + .slider:before {
             transform: translateX(27px);
         }
 
-        /* --- ส่วนเครดิตผู้พัฒนาท้ายเว็บ --- */
+        /* --- ส่วนเครดิตผู้พัฒนา --- */
         .credit-section {
             text-align: center;
             margin-top: 30px;
@@ -226,40 +223,37 @@
     </div>
 
     <script type="module">
-        // เรียกใช้งาน Firebase Web SDK v10 จาก CDN
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // ⚠️ ข้อสำคัญ: นำค่าคอนฟิกจากโปรเจกต์ Firebase ของคุณมาวางแทนที่ตรงนี้
+        // ใส่ค่าคอนฟิกที่ถูกต้องตามภาพของเรียบร้อยครับ
         const firebaseConfig = {
-            apiKey: "AIzaSyBS4suNegFJWpcE9UYv8XQGurforJiz1Ag",
-  authDomain: "plai-2941b.firebaseapp.com",
-  databaseURL: "https://plai-2941b-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "plai-2941b",
-  storageBucket: "plai-2941b.firebasestorage.app",
-  messagingSenderId: "380977562722",
-  appId: "1:380977562722:web:1142602f45a28bba567d3b"
+            apiKey: "AIzaSyAOkp-5yawcwaXxONh8QjbymjGuis9NOSM",
+            authDomain: "myiot2026-1a9dd.firebaseapp.com",
+            databaseURL: "https://myiot2026-1a9dd-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "myiot2026-1a9dd",
+            storageBucket: "myiot2026-1a9dd.firebasestorage.app",
+            messagingSenderId: "680364977716",
+            appId: "1:680364977716:web:6734e31f501d0aa91ca461"
+        };
 
         // เริ่มต้นเชื่อมต่อ Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ฟังก์ชันอัปเดตสถานะจากหน้าเว็บลงฐานข้อมูล Firebase (เมื่อกดคลิกสวิตช์)
+        // ฟังก์ชันเมื่อกดคลิกสวิตช์หน้าเว็บ -> ส่งค่าไป Firebase
         window.toggleDevice = function(channelId) {
             const isChecked = document.getElementById(channelId).checked;
-            
-            // บันทึกค่าลง Path: smart_home/ch1, smart_home/ch2 ... (ส่งค่าเป็น true หรือ false)
             set(ref(db, 'smart_home/' + channelId), isChecked)
                 .then(() => {
                     console.log(`อัปเดต ${channelId} เป็น: ${isChecked}`);
                 })
                 .catch((error) => {
-                    console.error("Firebase Update Error: ", error);
+                    console.error("Firebase Error: ", error);
                 });
         };
 
-        // ฟังก์ชัน Sync สถานะแบบ Real-time จาก Firebase มาแสดงบนหน้าเว็บ
-        // (ทำให้ถ้าบอร์ด ESP8266 สั่งงาน หรือเปิดเว็บพร้อมกันหลายเครื่อง สวิตช์จะขยับตามกันทันที)
+        // ดึงค่าแบบ Real-time จาก Firebase -> มาแสดงบนหน้าเว็บ
         const channelList = ['ch1', 'ch2', 'ch3', 'ch4'];
         channelList.forEach(channel => {
             const nodeRef = ref(db, 'smart_home/' + channel);
